@@ -7,7 +7,8 @@ from pprint import pprint
 
 class Config:
     # data
-    voc_data_dir = '/dataset/PASCAL2007/VOC2007/'
+    # voc_data_dir = '/dataset/PASCAL2007/VOC2007/'
+    voc_data_dir = '/VOCdevkit/'
     min_size = 600  # image resize
     max_size = 1000 # image resize
     num_workers = 8
@@ -45,7 +46,8 @@ class Config:
 
     test_num = 10000
     # model
-    load_path = None
+    # load_path = None
+    load_path = 'fasterrcnn_12211511_0.701052458187_torchvision_pretrain.pth'
 
     caffe_pretrain = False # use caffe pretrained model instead of torchvision
     caffe_pretrain_path = 'checkpoints/vgg16_caffe.pth'
