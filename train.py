@@ -5,6 +5,10 @@ import ipdb
 import matplotlib
 from tqdm import tqdm
 
+from advertorch.attacks import PGDAttack
+from torch import nn
+from advertorch.context import ctx_noparamgrad_and_eval
+
 from utils.config import opt
 from data.dataset import Dataset, TestDataset, inverse_normalize
 from model import FasterRCNNVGG16
@@ -24,10 +28,13 @@ resource.setrlimit(resource.RLIMIT_NOFILE, (20480, rlimit[1]))
 matplotlib.use('agg')
 
 
-def eval(dataloader, faster_rcnn, test_num=10000):
+def eval(dataloader, faster_rcnn, test_num=10000, flagadvtrain=False, adversary=None):
     pred_bboxes, pred_labels, pred_scores = list(), list(), list()
     gt_bboxes, gt_labels, gt_difficults = list(), list(), list()
     for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_) in tqdm(enumerate(dataloader)):
+        if flagadvtrain:
+            imgs = adversary.perturb(imgs, gt_labels_)
+
         sizes = [sizes[0][0].item(), sizes[1][0].item()]
         pred_bboxes_, pred_labels_, pred_scores_ = faster_rcnn.predict(imgs, [sizes])
         gt_bboxes += list(gt_bboxes_.numpy())
@@ -70,6 +77,10 @@ def train(**kwargs):
         trainer.load(opt.load_path)
 
     # trainer.vis.text(dataset.db.label_names, win='labels')
+    adversary = None
+    if opt.flagadvtrain:
+        adversary = PGDAttack(trainer.faster_rcnn, loss_fn=nn.CrossEntropyLoss(), eps=16, nb_iter=4, eps_iter=3,
+                              rand_init=True, clip_min=0.0, clip_max=1.0, targeted=False)
     best_map = 0
     lr_ = opt.lr
     for epoch in range(opt.epoch):
@@ -77,6 +88,10 @@ def train(**kwargs):
         for ii, (img, bbox_, label_, scale) in tqdm(enumerate(dataloader)):
             scale = at.scalar(scale)
             img, bbox, label = img.cuda().float(), bbox_.cuda(), label_.cuda()
+            if opt.flagadvtrain:
+                with ctx_noparamgrad_and_eval(trainer.faster_rcnn):
+                    img = adversary.perturb(img, label)
+
             trainer.train_step(img, bbox, label, scale)
 
             if (ii + 1) % opt.plot_every == 0:
@@ -105,7 +120,9 @@ def train(**kwargs):
                 # trainer.vis.text(str(trainer.rpn_cm.value().tolist()), win='rpn_cm')
                 # roi confusion matrix
                 # trainer.vis.img('roi_cm', at.totensor(trainer.roi_cm.conf, False).float())
-        eval_result = eval(test_dataloader, faster_rcnn, test_num=opt.test_num)
+        eval_result = eval(test_dataloader, faster_rcnn, test_num=opt.test_num,
+                           flagadvtrain=opt.flagadvtrain, adversary=adversary)
+
         # trainer.vis.plot('test_map', eval_result['map'])
         lr_ = trainer.faster_rcnn.optimizer.param_groups[0]['lr']
         log_info = 'lr:{}, map:{},loss:{}'.format(str(lr_),

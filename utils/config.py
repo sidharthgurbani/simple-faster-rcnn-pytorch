@@ -37,6 +37,8 @@ class Config:
     # training
     epoch = 14
 
+    # Set true flag if adversarial training needs to be performed
+    flagadvtrain = False
 
     use_adam = False # Use Adam optimizer
     use_chainer = False # try match everything as chainer
