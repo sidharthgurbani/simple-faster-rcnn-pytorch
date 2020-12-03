@@ -81,6 +81,7 @@ class FasterRCNN(nn.Module):
         self.loc_normalize_mean = loc_normalize_mean
         self.loc_normalize_std = loc_normalize_std
         self.use_preset('evaluate')
+        self.count = 1
 
     @property
     def n_class(self):
@@ -181,6 +182,12 @@ class FasterRCNN(nn.Module):
         bbox = np.concatenate(bbox, axis=0).astype(np.float32)
         label = np.concatenate(label, axis=0).astype(np.int32)
         score = np.concatenate(score, axis=0).astype(np.float32)
+        if self.count==1:
+            print("bbox shape is {}".format(bbox.shape))
+            print("label shape is {}".format(label.shape))
+            print("score shape is {}".format(score.shape))
+            self.count = 0
+
         return bbox, label, score
 
     @nograd
