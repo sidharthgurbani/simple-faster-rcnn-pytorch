@@ -55,7 +55,7 @@ class PGD(attack.Attack):
             adv_images = adv_images + torch.empty_like(adv_images).uniform_(-self.eps, self.eps)
             adv_images = torch.clamp(adv_images, min=0, max=1)
 
-        print_once = 1
+
         for i in range(self.steps):
             adv_images.requires_grad = True
             _, _, H, W = adv_images.shape
@@ -88,11 +88,9 @@ class PGD(attack.Attack):
                 sample_roi_index)
             # outputs = self.model(adv_images)
 
-            if print_once:
-                print("Shape of images is {}".format(adv_images.shape))
-                print("Shape of roi_score is {}".format(roi_score.shape))
-                print("Shape of labels is {}".format(gt_roi_label.shape))
-                print_once = 0
+            # print("Shape of images is {}".format(adv_images.shape))
+            # print("Shape of roi_score is {}".format(roi_score.shape))
+            # print("Shape of labels is {}".format(gt_roi_label.shape))
 
             cost = self._targeted*loss(roi_score, gt_roi_label.cuda()).to(self.device)
             # cost = self._targeted * loss(outputs[1], labels).to(self.device)
