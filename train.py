@@ -99,11 +99,11 @@ def train(**kwargs):
         trainer.reset_meters()
         for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_) in tqdm(enumerate(test_dataloader)):
             sizes = [sizes[0][0].item(), sizes[1][0].item()]
-            print(sizes)
-            print(type(sizes))
+            print(sizes[0][1])
+            print(sizes[1])
             print(imgs)
             print(type(imgs))
-            print(imgs[0])
+            print(imgs[0].shape)
             scale = imgs[0].shape[3]/sizes[1]
             scale = at.scalar(scale)
             imgs, gt_bboxes_, gt_labels_ = imgs.cuda().float(), gt_bboxes_.cuda(), gt_labels_.cuda()
