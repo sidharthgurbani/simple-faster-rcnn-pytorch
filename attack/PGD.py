@@ -99,7 +99,7 @@ class PGD(attack.Attack):
             # cost = self._targeted * loss(outputs[1], labels).to(self.device)
 
             grad = torch.autograd.grad(cost, adv_images,
-                                       retain_graph=False, create_graph=False)[0]
+                                       retain_graph=True, create_graph=True)[0]
 
             adv_images = adv_images.detach() + self.alpha * grad.sign()
             delta = torch.clamp(adv_images - images, min=-self.eps, max=self.eps)
