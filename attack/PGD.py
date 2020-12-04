@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 
-# import torchattacks
-from attack import attack
+from torchattacks import attack
+# from attack import attack
 
-class PGD1(attack):
+class PGD(attack.Attack):
     r"""
     PGD in the paper 'Towards Deep Learning Models Resistant to Adversarial Attacks'
     [https://arxiv.org/abs/1706.06083]
@@ -29,7 +29,7 @@ class PGD1(attack):
     """
 
     def __init__(self, model, eps=0.3, alpha=2 / 255, steps=40, random_start=False):
-        super(PGD1, self).__init__("PGD1", model)
+        super(PGD, self).__init__("PGD", model)
 
         self.eps = eps
         self.alpha = alpha
