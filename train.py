@@ -36,15 +36,13 @@ def eval(dataloader, faster_rcnn, test_num=10000, flagadvtrain=False, adversary=
     for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_) in tqdm(enumerate(dataloader)):
         sizes = [sizes[0][0].item(), sizes[1][0].item()]
         if flagadvtrain:
-            new_imgs = list()
             scales = list()
             for img, size in zip(imgs, [sizes]):
                 img = at.totensor(img[None]).float()
                 scale = img.shape[3] / size[1]
-                new_imgs.append(img)
                 scales.append(scale)
 
-            imgs = adversary(new_imgs, gt_bboxes_, gt_labels_, scales)
+            imgs = adversary(imgs, gt_bboxes_, gt_labels_, scales)
 
         pred_bboxes_, pred_labels_, pred_scores_ = faster_rcnn.predict(imgs, [sizes])
         gt_bboxes += list(gt_bboxes_.numpy())
