@@ -5,6 +5,8 @@ import ipdb
 import matplotlib
 from tqdm import tqdm
 
+import torchattacks
+
 from advertorch.attacks import PGDAttack
 from torch import nn
 from advertorch.context import ctx_noparamgrad_and_eval
@@ -33,7 +35,8 @@ def eval(dataloader, faster_rcnn, test_num=10000, flagadvtrain=False, adversary=
     gt_bboxes, gt_labels, gt_difficults = list(), list(), list()
     for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_) in tqdm(enumerate(dataloader)):
         if flagadvtrain:
-            imgs = adversary.perturb(imgs, gt_labels_)
+            img = adversary(imgs, gt_labels_)
+            # imgs = adversary.perturb(imgs, gt_labels_)
 
         sizes = [sizes[0][0].item(), sizes[1][0].item()]
         pred_bboxes_, pred_labels_, pred_scores_ = faster_rcnn.predict(imgs, [sizes])
@@ -79,8 +82,10 @@ def train(**kwargs):
     # trainer.vis.text(dataset.db.label_names, win='labels')
     adversary = None
     if opt.flagadvtrain:
-        adversary = PGDAttack(trainer.faster_rcnn, loss_fn=nn.CrossEntropyLoss(), eps=16, nb_iter=4, eps_iter=3,
-                              rand_init=True, clip_min=0.0, clip_max=1.0, targeted=False)
+        print("flagadvtrain turned: Adversarial training!")
+        atk = torchattacks.PGD(trainer.faster_rcnn, eps=16, alpha=3, steps=4)
+        # adversary = PGDAttack(trainer.faster_rcnn, loss_fn=nn.CrossEntropyLoss(), eps=16, nb_iter=4, eps_iter=3,
+        #                       rand_init=True, clip_min=0.0, clip_max=1.0, targeted=False)
     best_map = 0
     lr_ = opt.lr
     for epoch in range(opt.epoch):
@@ -89,8 +94,9 @@ def train(**kwargs):
             scale = at.scalar(scale)
             img, bbox, label = img.cuda().float(), bbox_.cuda(), label_.cuda()
             if opt.flagadvtrain:
-                with ctx_noparamgrad_and_eval(trainer.faster_rcnn):
-                    img = adversary.perturb(img, label)
+                img = atk(img, label)
+                # with ctx_noparamgrad_and_eval(trainer.faster_rcnn):
+                #     img = adversary.perturb(img, label)
 
             trainer.train_step(img, bbox, label, scale)
 
@@ -121,7 +127,7 @@ def train(**kwargs):
                 # roi confusion matrix
                 # trainer.vis.img('roi_cm', at.totensor(trainer.roi_cm.conf, False).float())
         eval_result = eval(test_dataloader, faster_rcnn, test_num=opt.test_num,
-                           flagadvtrain=opt.flagadvtrain, adversary=adversary)
+                           flagadvtrain=opt.flagadvtrain, adversary=atk)# adversary=adversary)
 
         # trainer.vis.plot('test_map', eval_result['map'])
         lr_ = trainer.faster_rcnn.optimizer.param_groups[0]['lr']
