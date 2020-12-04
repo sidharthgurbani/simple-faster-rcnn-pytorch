@@ -42,6 +42,7 @@ def eval(dataloader, faster_rcnn, test_num=10000, flagadvtrain=False, adversary=
                 scale = img.shape[3] / size[1]
                 scales.append(scale)
 
+            imgs, gt_bboxes_, gt_labels_ = imgs.cuda().float(), gt_bboxes_.cuda(), gt_labels_.cuda()
             imgs = adversary(imgs, gt_bboxes_, gt_labels_, scales)
 
         pred_bboxes_, pred_labels_, pred_scores_ = faster_rcnn.predict(imgs, [sizes])
