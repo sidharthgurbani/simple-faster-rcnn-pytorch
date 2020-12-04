@@ -101,6 +101,9 @@ def train(**kwargs):
             sizes = [sizes[0][0].item(), sizes[1][0].item()]
             print(sizes)
             print(type(sizes))
+            print(imgs)
+            print(type(imgs))
+            print(imgs[0])
             scale = imgs[0].shape[3]/sizes[1]
             scale = at.scalar(scale)
             imgs, gt_bboxes_, gt_labels_ = imgs.cuda().float(), gt_bboxes_.cuda(), gt_labels_.cuda()
