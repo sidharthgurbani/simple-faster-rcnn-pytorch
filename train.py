@@ -103,8 +103,8 @@ def train(**kwargs):
             print(sizes[1])
             print(imgs)
             print(type(imgs))
-            print(imgs[0].shape)
-            scale = imgs[0].shape[3]/sizes[1]
+            print(imgs[0].shape[2])
+            scale = imgs[0].shape[2]/sizes[1]
             scale = at.scalar(scale)
             imgs, gt_bboxes_, gt_labels_ = imgs.cuda().float(), gt_bboxes_.cuda(), gt_labels_.cuda()
             if opt.flagadvtrain:
