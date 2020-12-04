@@ -83,7 +83,7 @@ def train(**kwargs):
     adversary = None
     if opt.flagadvtrain:
         print("flagadvtrain turned: Adversarial training!")
-        atk = PGD.PGD(trainer.faster_rcnn, eps=16, alpha=3, steps=4)
+        atk = PGD.PGD(trainer.faster_rcnn, trainer, eps=16, alpha=3, steps=4)
         # atk = torchattacks.PGD(trainer.faster_rcnn, eps=16, alpha=3, steps=4)
         # adversary = PGDAttack(trainer.faster_rcnn, loss_fn=nn.CrossEntropyLoss(), eps=16, nb_iter=4, eps_iter=3,
         #                       rand_init=True, clip_min=0.0, clip_max=1.0, targeted=False)
@@ -97,7 +97,7 @@ def train(**kwargs):
             print("Image shape is {}".format(img.size()))
             print("image type is {}".format(type(img)))
             if opt.flagadvtrain:
-                img = atk(img, label)
+                img = atk(img, bbox, label, scale)
                 # with ctx_noparamgrad_and_eval(trainer.faster_rcnn):
                 #     img = adversary.perturb(img, label)
 
