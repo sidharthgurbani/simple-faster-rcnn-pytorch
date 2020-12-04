@@ -55,7 +55,8 @@ class PGD(attack.Attack):
         for i in range(self.steps):
             adv_images.requires_grad = True
             outputs = self.model(adv_images)
-
+            print("Shape of outputs[1] is {}".format(outputs[1].shape))
+            print("Shape of labels is {}".format(labels.shape))
             cost = self._targeted * loss(outputs[1], labels).to(self.device)
 
             grad = torch.autograd.grad(cost, adv_images,
