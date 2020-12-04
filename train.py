@@ -107,6 +107,7 @@ def train(**kwargs):
                     scales.append(scale)
 
                 imgs, gt_bboxes_, gt_labels_ = imgs.cuda().float(), gt_bboxes_.cuda(), gt_labels_.cuda()
+                print(imgs.shape)
                 imgs = atk(imgs, gt_bboxes_, gt_labels_, scales)
                 print("hi!\n")
 
