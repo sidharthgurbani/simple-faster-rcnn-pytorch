@@ -94,8 +94,8 @@ def train(**kwargs):
         for ii, (img, bbox_, label_, scale) in tqdm(enumerate(dataloader)):
             scale = at.scalar(scale)
             img, bbox, label = img.cuda().float(), bbox_.cuda(), label_.cuda()
-            print("Image shape is {}".format(img.size()))
-            print("image type is {}".format(type(img)))
+            # print("Image shape is {}".format(img.size()))
+            # print("image type is {}".format(type(img)))
             if opt.flagadvtrain:
                 img = atk(img, bbox, label, scale)
                 # with ctx_noparamgrad_and_eval(trainer.faster_rcnn):
