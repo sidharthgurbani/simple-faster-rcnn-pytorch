@@ -99,16 +99,12 @@ def train(**kwargs):
         trainer.reset_meters()
         for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_) in tqdm(enumerate(test_dataloader)):
             sizes = [sizes[0][0].item(), sizes[1][0].item()]
+            scale = imgs[0].shape[3]/sizes[1]
+            scale = at.scalar(scale)
+            imgs, gt_bboxes_, gt_labels_ = imgs.cuda().float(), gt_bboxes_.cuda(), gt_labels_.cuda()
             if opt.flagadvtrain:
-                scales = list()
-                for img, size in zip(imgs, [sizes]):
-                    img = at.totensor(img[None]).float()
-                    scale = img.shape[3] / size[1]
-                    scales.append(scale)
-
-                imgs, gt_bboxes_, gt_labels_ = imgs.cuda().float(), gt_bboxes_.cuda(), gt_labels_.cuda()
-                print(imgs.shape)
-                imgs = atk(imgs, gt_bboxes_, gt_labels_, scales)
+                # print(imgs.shape)
+                imgs = atk(imgs, gt_bboxes_, gt_labels_, scale)
                 print("hi!\n")
 
         for ii, (img, bbox_, label_, scale) in tqdm(enumerate(dataloader)):
