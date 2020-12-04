@@ -99,7 +99,7 @@ def train(**kwargs):
         trainer.reset_meters()
         for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_) in tqdm(enumerate(test_dataloader)):
             sizes = [sizes[0][0].item(), sizes[1][0].item()]
-            print(sizes[0][1])
+            print(sizes[0])
             print(sizes[1])
             print(imgs)
             print(type(imgs))
