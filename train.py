@@ -23,7 +23,6 @@ from utils.eval_tool import eval_detection_voc
 # fix for ulimit
 # https://github.com/pytorch/pytorch/issues/973#issuecomment-346405667
 import resource
-
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 resource.setrlimit(resource.RLIMIT_NOFILE, (20480, rlimit[1]))
 
@@ -33,17 +32,14 @@ matplotlib.use('agg')
 def eval(dataloader, faster_rcnn, test_num=10000, flagadvtrain=False, adversary=None):
     pred_bboxes, pred_labels, pred_scores = list(), list(), list()
     gt_bboxes, gt_labels, gt_difficults = list(), list(), list()
+
     for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_) in tqdm(enumerate(dataloader)):
         sizes = [sizes[0][0].item(), sizes[1][0].item()]
         if flagadvtrain:
-            scales = list()
-            for img, size in zip(imgs, [sizes]):
-                img = at.totensor(img[None]).float()
-                scale = img.shape[3] / size[1]
-                scales.append(scale)
-
+            scale = imgs[0].shape[2] / sizes[1]
             imgs, gt_bboxes_, gt_labels_ = imgs.cuda().float(), gt_bboxes_.cuda(), gt_labels_.cuda()
-            imgs = adversary(imgs, gt_bboxes_, gt_labels_, scales)
+            imgs = adversary(imgs, gt_bboxes_, gt_labels_, scale)
+            gt_bboxes_, gt_labels_ = gt_bboxes_.cpu(), gt_labels_.cpu()
 
         pred_bboxes_, pred_labels_, pred_scores_ = faster_rcnn.predict(imgs, [sizes])
         gt_bboxes += list(gt_bboxes_.numpy())
@@ -97,23 +93,6 @@ def train(**kwargs):
     lr_ = opt.lr
     for epoch in range(opt.epoch):
         trainer.reset_meters()
-        for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_) in tqdm(enumerate(test_dataloader)):
-            sizes = [sizes[0][0].item(), sizes[1][0].item()]
-            print(sizes[0])
-            print(sizes[1])
-            print(imgs)
-            print(type(imgs))
-            print(imgs[0].shape[2])
-            scale = imgs[0].shape[2]/sizes[1]
-            print(scale)
-            # scale = at.scalar(scale)
-            # print(scale)
-            imgs, gt_bboxes_, gt_labels_ = imgs.cuda().float(), gt_bboxes_.cuda(), gt_labels_.cuda()
-            if opt.flagadvtrain:
-                # print(imgs.shape)
-                imgs = atk(imgs, gt_bboxes_, gt_labels_, scale)
-                print("hi!\n")
-
         for ii, (img, bbox_, label_, scale) in tqdm(enumerate(dataloader)):
             scale = at.scalar(scale)
             img, bbox, label = img.cuda().float(), bbox_.cuda(), label_.cuda()
