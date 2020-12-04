@@ -35,8 +35,15 @@ def eval(dataloader, faster_rcnn, test_num=10000, flagadvtrain=False, adversary=
     gt_bboxes, gt_labels, gt_difficults = list(), list(), list()
     for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_) in tqdm(enumerate(dataloader)):
         if flagadvtrain:
-            img = adversary(imgs, gt_labels_)
-            # imgs = adversary.perturb(imgs, gt_labels_)
+            new_imgs = list()
+            scales = list()
+            for img, size in zip(imgs, sizes):
+                img = at.totensor(img[None]).float()
+                scale = img.shape[3] / size[1]
+                new_imgs.append(img)
+                scales.append(scale)
+
+            imgs = adversary(new_imgs, gt_bboxes_, gt_labels_, scales)
 
         sizes = [sizes[0][0].item(), sizes[1][0].item()]
         pred_bboxes_, pred_labels_, pred_scores_ = faster_rcnn.predict(imgs, [sizes])
