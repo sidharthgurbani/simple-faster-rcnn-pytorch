@@ -62,7 +62,7 @@ class PGD(attack.Attack):
             img_size = (H, W)
 
             features = self.model.extractor(adv_images)
-            print(features.shape)
+            # print(features.shape)
             # print(scale.shape)
 
             rpn_locs, rpn_scores, rois, roi_indices, anchor = \
