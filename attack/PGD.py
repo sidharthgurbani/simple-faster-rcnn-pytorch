@@ -48,30 +48,6 @@ class PGD(attack.Attack):
         labels = self._transform_label(images, labels)
         loss = nn.CrossEntropyLoss()
 
-        _, _, H, W = images.shape
-        img_size = (H, W)
-
-        features = self.model.extractor(images)
-
-        rpn_locs, rpn_scores, rois, roi_indices, anchor = \
-            self.model.rpn(features, img_size, scale)
-
-        # Since batch size is one, convert variables to singular form
-        bbox = bboxes[0]
-        label = labels[0]
-        rpn_score = rpn_scores[0]
-        rpn_loc = rpn_locs[0]
-        roi = rois
-
-        sample_roi, gt_roi_loc, gt_roi_label = self.modeltrainer.proposal_target_creator(
-            roi,
-            at.tonumpy(bbox),
-            at.tonumpy(label),
-            self.modeltrainer.loc_normalize_mean,
-            self.modeltrainer.loc_normalize_std)
-
-        gt_roi_label = at.totensor(gt_roi_label).long()
-
         adv_images = images.clone().detach()
 
         if self.random_start:
@@ -82,6 +58,29 @@ class PGD(attack.Attack):
         print_once = 1
         for i in range(self.steps):
             adv_images.requires_grad = True
+            _, _, H, W = adv_images.shape
+            img_size = (H, W)
+
+            features = self.model.extractor(adv_images)
+
+            rpn_locs, rpn_scores, rois, roi_indices, anchor = \
+                self.model.rpn(features, img_size, scale)
+
+            # Since batch size is one, convert variables to singular form
+            bbox = bboxes[0]
+            label = labels[0]
+            rpn_score = rpn_scores[0]
+            rpn_loc = rpn_locs[0]
+            roi = rois
+
+            sample_roi, gt_roi_loc, gt_roi_label = self.modeltrainer.proposal_target_creator(
+                roi,
+                at.tonumpy(bbox),
+                at.tonumpy(label),
+                self.modeltrainer.loc_normalize_mean,
+                self.modeltrainer.loc_normalize_std)
+
+            gt_roi_label = at.totensor(gt_roi_label).long()
             sample_roi_index = t.zeros(len(sample_roi))
             _, roi_score = self.model.head(
                 features,
