@@ -35,11 +35,11 @@ def eval(dataloader, faster_rcnn, test_num=10000, flagadvtrain=False, adversary=
 
     for ii, (imgs, sizes, gt_bboxes_, gt_labels_, gt_difficults_) in tqdm(enumerate(dataloader)):
         sizes = [sizes[0][0].item(), sizes[1][0].item()]
-        if flagadvtrain:
-            scale = imgs[0].shape[2] / sizes[1]
-            imgs, gt_bboxes_, gt_labels_ = imgs.cuda().float(), gt_bboxes_.cuda(), gt_labels_.cuda()
-            imgs = adversary(imgs, gt_bboxes_, gt_labels_, scale)
-            gt_bboxes_, gt_labels_ = gt_bboxes_.cpu(), gt_labels_.cpu()
+        # if flagadvtrain:
+        #     scale = imgs[0].shape[2] / sizes[1]
+        #     imgs, gt_bboxes_, gt_labels_ = imgs.cuda().float(), gt_bboxes_.cuda(), gt_labels_.cuda()
+        #     imgs = adversary(imgs, gt_bboxes_, gt_labels_, scale)
+        #     gt_bboxes_, gt_labels_ = gt_bboxes_.cpu(), gt_labels_.cpu()
 
         pred_bboxes_, pred_labels_, pred_scores_ = faster_rcnn.predict(imgs, [sizes])
         gt_bboxes += list(gt_bboxes_.numpy())
