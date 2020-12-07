@@ -162,6 +162,11 @@ class FasterRCNNTrainer(nn.Module):
         losses = [rpn_loc_loss, rpn_cls_loss, roi_loc_loss, roi_cls_loss]
         losses = losses + [sum(losses)]
 
+        print("This is during adversarial training")
+        print("Shape of images is {}".format(imgs.shape))
+        print("Shape of sum of losses is {}".format(losses[4].shape))
+        print("Shape of labels is {}\n".format(labels.shape))
+
         return LossTuple(*losses)
 
     def train_step(self, imgs, bboxes, labels, scale):

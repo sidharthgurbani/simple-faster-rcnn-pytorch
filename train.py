@@ -96,13 +96,19 @@ def train(**kwargs):
         for ii, (img, bbox_, label_, scale) in tqdm(enumerate(dataloader)):
             scale = at.scalar(scale)
             img, bbox, label = img.cuda().float(), bbox_.cuda(), label_.cuda()
-            # print("Image shape is {}".format(img.size()))
-            # print("image type is {}".format(type(img)))
+
+            print("This is before adversarial training")
+            print("Shape of image is {}".format(img.shape))
+            print("Shape of image is {}".format(bbox.shape))
+            print("Shape of image is {}\n".format(label.shape))
+
             if opt.flagadvtrain:
                 img = atk(img, bbox, label, scale)
                 # with ctx_noparamgrad_and_eval(trainer.faster_rcnn):
                 #     img = adversary.perturb(img, label)
+                print("Adversarial training done!")
 
+            print("Normal training starts\n")
             trainer.train_step(img, bbox, label, scale)
 
             if (ii + 1) % opt.plot_every == 0:
