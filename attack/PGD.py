@@ -133,10 +133,10 @@ class PGD(attack.Attack):
         for i in range(self.steps):
             adv_images.requires_grad = True
             outputs = self.model(adv_images, bboxes, labels, scale)
-            (_, _, _, _, losses) = outputs
-            print("Shape of losses is {}".format(losses))
+            (_, _, _, _, cost) = outputs
+            # print("Shape of losses is {}".format(losses))
 
-            cost = self._targeted * loss(losses, labels).to(self.device)
+            # cost = self._targeted * loss(losses, labels).to(self.device)
 
             grad = torch.autograd.grad(cost, adv_images,
                                        retain_graph=True, create_graph=True,
