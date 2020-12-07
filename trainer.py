@@ -160,12 +160,13 @@ class FasterRCNNTrainer(nn.Module):
         self.roi_cm.add(at.totensor(roi_score, False), gt_roi_label.data.long())
 
         losses = [rpn_loc_loss, rpn_cls_loss, roi_loc_loss, roi_cls_loss]
-        losses = losses + [sum(losses)]
 
         print("This is during adversarial training")
+        print("Shape of sum of losses is {}".format([sum(losses)]))
         print("Shape of images is {}".format(imgs.shape))
-        print("Shape of sum of losses is {}".format(losses[4].shape))
         print("Shape of labels is {}\n".format(labels.shape))
+
+        losses = losses + [sum(losses)]
 
         return LossTuple(*losses)
 
