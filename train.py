@@ -20,6 +20,7 @@ from utils import array_tool as at
 from utils.vis_tool import visdom_bbox
 from utils.eval_tool import eval_detection_voc
 import matplotlib.pyplot as plt
+from sklearn.base import clone
 
 # fix for ulimit
 # https://github.com/pytorch/pytorch/issues/973#issuecomment-346405667
@@ -84,6 +85,7 @@ def train(**kwargs):
 
     # trainer.vis.text(dataset.db.label_names, win='labels')
     adversary = None
+    trainer2 = clone(trainer)
     if opt.flagadvtrain:
         print("flagadvtrain turned: Adversarial training!")
         atk = PGD.PGD(trainer, eps=16, alpha=3, steps=4)
@@ -94,6 +96,7 @@ def train(**kwargs):
     lr_ = opt.lr
     for epoch in range(opt.epoch):
         trainer.reset_meters()
+        trainer2.reset_meters()
         for ii, (img, bbox_, label_, scale) in tqdm(enumerate(dataloader)):
             scale = at.scalar(scale)
             img, bbox, label = img.cuda().float(), bbox_.cuda(), label_.cuda()
@@ -102,6 +105,8 @@ def train(**kwargs):
             # print("Shape of image is {}".format(img.shape))
             # print("Shape of image is {}".format(bbox.shape))
             # print("Shape of image is {}\n".format(label.shape))
+
+            trainer2.train_step(img, bbox, label, scale)
 
             if opt.flagadvtrain:
                 img = atk(img, bbox, label, scale)
@@ -124,7 +129,14 @@ def train(**kwargs):
                     if v is not None:
                         print(k,v)
                         plt.plot(k, v)
-                        plt.savefig("losses/img{}".format(i))
+                        plt.savefig("losses/adv_loss{}".format(i))
+
+                for k, v in trainer2.get_meter_data().items():
+                    i += 1
+                    if v is not None:
+                        print(k,v)
+                        plt.plot(k, v)
+                        plt.savefig("losses/normal_loss{}".format(i))
 
                 print("losses plotted. Check losses folder!\n")
                 # trainer.vis.plot_many(trainer.get_meter_data())
