@@ -135,7 +135,7 @@ def train(**kwargs):
                                      at.tonumpy(bbox_[0]),
                                      at.tonumpy(label_[0]))
                 plt.figure()
-                plt.imshow(gt_img)
+                plt.imshow(gt_img.permute(1,2,0))
                 plt.savefig("imgs/gt_img{}".format(ii))
                 plt.close()
 
@@ -148,7 +148,7 @@ def train(**kwargs):
                                        at.tonumpy(_labels[0]).reshape(-1),
                                        at.tonumpy(_scores[0]))
                 plt.figure()
-                plt.imshow(pred_img)
+                plt.imshow(pred_img.permute(1,2,0))
                 plt.savefig("imgs/pred_img{}".format(ii))
                 plt.close()
                 # trainer.vis.img('pred_img', pred_img)
