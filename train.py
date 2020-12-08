@@ -19,6 +19,7 @@ from trainer import FasterRCNNTrainer
 from utils import array_tool as at
 from utils.vis_tool import visdom_bbox
 from utils.eval_tool import eval_detection_voc
+import matplotlib.pyplot as plt
 
 # fix for ulimit
 # https://github.com/pytorch/pytorch/issues/973#issuecomment-346405667
@@ -116,6 +117,16 @@ def train(**kwargs):
                     ipdb.set_trace()
 
                 # plot loss
+                print("Plotting losses")
+                i = 0
+                for k, v in trainer.get_meter_data().items():
+                    i += 1
+                    if v is not None:
+                        print(k,v)
+                        plt.plot(k, v)
+                        plt.savefig("losses/img{}".format(i))
+
+                print("losses plotted. Check losses folder!\n")
                 # trainer.vis.plot_many(trainer.get_meter_data())
 
                 # plot groud truth bboxes
