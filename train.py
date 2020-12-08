@@ -20,6 +20,7 @@ from utils import array_tool as at
 from utils.vis_tool import visdom_bbox
 from utils.eval_tool import eval_detection_voc
 import matplotlib.pyplot as plt
+import numpy as np
 from sklearn.base import clone
 
 # fix for ulimit
@@ -135,7 +136,8 @@ def train(**kwargs):
                                      at.tonumpy(bbox_[0]),
                                      at.tonumpy(label_[0]))
                 plt.figure()
-                plt.imshow(gt_img.permute(1,2,0))
+                c, h, w = gt_img.shape
+                plt.imshow(np.reshape(gt_img, (h, w, c)))
                 plt.savefig("imgs/gt_img{}".format(ii))
                 plt.close()
 
@@ -148,7 +150,8 @@ def train(**kwargs):
                                        at.tonumpy(_labels[0]).reshape(-1),
                                        at.tonumpy(_scores[0]))
                 plt.figure()
-                plt.imshow(pred_img.permute(1,2,0))
+                c, h, w = pred_img.shape
+                plt.imshow(np.reshape(pred_img, (h, w, c)))
                 plt.savefig("imgs/pred_img{}".format(ii))
                 plt.close()
                 # trainer.vis.img('pred_img', pred_img)
