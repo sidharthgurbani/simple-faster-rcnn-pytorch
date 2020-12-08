@@ -94,6 +94,8 @@ def train(**kwargs):
         #                       rand_init=True, clip_min=0.0, clip_max=1.0, targeted=False)
     best_map = 0
     lr_ = opt.lr
+    normal_total_loss = []
+    adv_total_loss = []
     for epoch in range(opt.epoch):
         trainer.reset_meters()
         trainer2.reset_meters()
@@ -117,28 +119,31 @@ def train(**kwargs):
             # print("Normal training starts\n")
             trainer.train_step(img, bbox, label, scale)
 
+            normal_total_loss.append(trainer2.get_meter_data()["total_loss"])
+            adv_total_loss.append(trainer.get_meter_data()["total_loss"])
+
             if (ii + 1) % opt.plot_every == 0:
                 if os.path.exists(opt.debug_file):
                     ipdb.set_trace()
 
                 # plot loss
-                print("Plotting losses")
-                i = 0
-                for k, v in trainer.get_meter_data().items():
-                    i += 1
-                    if v is not None:
-                        print(k,v)
-                        plt.plot(k, v)
-                        plt.savefig("losses/adv_loss{}".format(i))
-
-                for k, v in trainer2.get_meter_data().items():
-                    i += 1
-                    if v is not None:
-                        print(k,v)
-                        plt.plot(k, v)
-                        plt.savefig("losses/normal_loss{}".format(i))
-
-                print("losses plotted. Check losses folder!\n")
+                # print("Plotting losses")
+                # i = 0
+                # for k, v in trainer.get_meter_data().items():
+                #     i += 1
+                #     if v is not None:
+                #         print(k,v)
+                #         plt.plot(k, v)
+                #         plt.savefig("losses/adv_loss{}".format(i))
+                #
+                # for k, v in trainer2.get_meter_data().items():
+                #     i += 1
+                #     if v is not None:
+                #         print(k,v)
+                #         plt.plot(k, v)
+                #         plt.savefig("losses/normal_loss{}".format(i))
+                #
+                # print("losses plotted. Check losses folder!\n")
                 # trainer.vis.plot_many(trainer.get_meter_data())
 
                 # plot groud truth bboxes
@@ -160,6 +165,12 @@ def train(**kwargs):
                 # trainer.vis.text(str(trainer.rpn_cm.value().tolist()), win='rpn_cm')
                 # roi confusion matrix
                 # trainer.vis.img('roi_cm', at.totensor(trainer.roi_cm.conf, False).float())
+
+        plt.plot(normal_total_loss)
+        plt.savefig("losses/normal_loss{}".format(epoch))
+        plt.plot(adv_total_loss)
+        plt.savefig("losses/adv_loss{}".format(epoch))
+
         eval_result = eval(test_dataloader, faster_rcnn, test_num=opt.test_num,
                            flagadvtrain=opt.flagadvtrain, adversary=atk)# adversary=adversary)
 
