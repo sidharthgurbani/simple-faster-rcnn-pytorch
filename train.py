@@ -127,38 +127,30 @@ def train(**kwargs):
                     ipdb.set_trace()
 
                 # plot loss
-                # print("Plotting losses")
-                # i = 0
-                # for k, v in trainer.get_meter_data().items():
-                #     i += 1
-                #     if v is not None:
-                #         print(k,v)
-                #         plt.plot(k, v)
-                #         plt.savefig("losses/adv_loss{}".format(i))
-                #
-                # for k, v in trainer2.get_meter_data().items():
-                #     i += 1
-                #     if v is not None:
-                #         print(k,v)
-                #         plt.plot(k, v)
-                #         plt.savefig("losses/normal_loss{}".format(i))
-                #
-                # print("losses plotted. Check losses folder!\n")
                 # trainer.vis.plot_many(trainer.get_meter_data())
 
                 # plot groud truth bboxes
                 ori_img_ = inverse_normalize(at.tonumpy(img[0]))
-                # gt_img = visdom_bbox(ori_img_,
-                #                      at.tonumpy(bbox_[0]),
-                #                      at.tonumpy(label_[0]))
+                gt_img = visdom_bbox(ori_img_,
+                                     at.tonumpy(bbox_[0]),
+                                     at.tonumpy(label_[0]))
+                plt.figure()
+                plt.imshow(gt_img)
+                plt.savefig("imgs/gt_img{}".format(ii))
+                plt.close()
+
                 # trainer.vis.img('gt_img', gt_img)
 
                 # plot predicti bboxes
-                # _bboxes, _labels, _scores = trainer.faster_rcnn.predict([ori_img_], visualize=True)
-                # pred_img = visdom_bbox(ori_img_,
-                #                        at.tonumpy(_bboxes[0]),
-                #                        at.tonumpy(_labels[0]).reshape(-1),
-                #                        at.tonumpy(_scores[0]))
+                _bboxes, _labels, _scores = trainer.faster_rcnn.predict([ori_img_], visualize=True)
+                pred_img = visdom_bbox(ori_img_,
+                                       at.tonumpy(_bboxes[0]),
+                                       at.tonumpy(_labels[0]).reshape(-1),
+                                       at.tonumpy(_scores[0]))
+                plt.figure()
+                plt.imshow(pred_img)
+                plt.savefig("imgs/pred_img{}".format(ii))
+                plt.close()
                 # trainer.vis.img('pred_img', pred_img)
 
                 # rpn confusion matrix(meter)
@@ -166,10 +158,22 @@ def train(**kwargs):
                 # roi confusion matrix
                 # trainer.vis.img('roi_cm', at.totensor(trainer.roi_cm.conf, False).float())
 
-        plt.plot(normal_total_loss)
-        plt.savefig("losses/normal_loss{}".format(epoch))
-        plt.plot(adv_total_loss)
-        plt.savefig("losses/adv_loss{}".format(epoch))
+        # plt.figure()
+        # plt.plot(normal_total_loss)
+        # plt.savefig("losses/normal_loss{}".format(epoch))
+        # plt.close()
+        #
+        # plt.figure()
+        # plt.plot(adv_total_loss)
+        # plt.savefig("losses/adv_loss{}".format(epoch))
+        # plt.close()
+
+        fig = plt.figure()
+        ax1 = fig.add_subplot(2,1,1)
+        ax1.plot(normal_total_loss)
+        ax2 = fig.add_subplot(2,1,2)
+        ax2.plot(adv_total_loss)
+        fig.savefig("losses/both_loss{}".format(epoch))
 
         eval_result = eval(test_dataloader, faster_rcnn, test_num=opt.test_num,
                            flagadvtrain=opt.flagadvtrain, adversary=atk)# adversary=adversary)
@@ -179,6 +183,7 @@ def train(**kwargs):
         log_info = 'lr:{}, map:{},loss:{}'.format(str(lr_),
                                                   str(eval_result['map']),
                                                   str(trainer.get_meter_data()))
+        print(log_info)
         # trainer.vis.log(log_info)
 
         if eval_result['map'] > best_map:
@@ -191,6 +196,8 @@ def train(**kwargs):
 
         if epoch == 13: 
             break
+
+        print("Best MAP is {}".format(best_map))
 
 
 if __name__ == '__main__':
