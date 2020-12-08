@@ -21,7 +21,7 @@ from utils.vis_tool import visdom_bbox
 from utils.eval_tool import eval_detection_voc
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.base import clone
+import copy
 
 # fix for ulimit
 # https://github.com/pytorch/pytorch/issues/973#issuecomment-346405667
@@ -103,6 +103,7 @@ def train(**kwargs):
         for ii, (img, bbox_, label_, scale) in tqdm(enumerate(dataloader)):
             scale = at.scalar(scale)
             img, bbox, label = img.cuda().float(), bbox_.cuda(), label_.cuda()
+            temp_img = copy.deepcopy(img)
 
             # print("This is before adversarial training")
             # print("Shape of image is {}".format(img.shape))
@@ -131,6 +132,16 @@ def train(**kwargs):
                 # trainer.vis.plot_many(trainer.get_meter_data())
 
                 # plot groud truth bboxes
+                temp_ori_img_ = inverse_normalize(at.tonumpy(temp_img[0]))
+                temp_gt_img = visdom_bbox(temp_ori_img_,
+                                     at.tonumpy(bbox_[0]),
+                                     at.tonumpy(label_[0]))
+                plt.figure()
+                c, h, w = temp_gt_img.shape
+                plt.imshow(np.reshape(temp_gt_img, (h, w, c)))
+                plt.savefig("imgs/temp_orig_images/temp_gt_img{}".format(ii))
+                plt.close()
+
                 ori_img_ = inverse_normalize(at.tonumpy(img[0]))
                 gt_img = visdom_bbox(ori_img_,
                                      at.tonumpy(bbox_[0]),
@@ -138,7 +149,7 @@ def train(**kwargs):
                 plt.figure()
                 c, h, w = gt_img.shape
                 plt.imshow(np.reshape(gt_img, (h, w, c)))
-                plt.savefig("imgs/gt_img{}".format(ii))
+                plt.savefig("imgs/orig_images/gt_img{}".format(ii))
                 plt.close()
 
                 # trainer.vis.img('gt_img', gt_img)
@@ -152,7 +163,7 @@ def train(**kwargs):
                 plt.figure()
                 c, h, w = pred_img.shape
                 plt.imshow(np.reshape(pred_img, (h, w, c)))
-                plt.savefig("imgs/pred_img{}".format(ii))
+                plt.savefig("imgs/pred_images/pred_img{}".format(ii))
                 plt.close()
                 # trainer.vis.img('pred_img', pred_img)
 
