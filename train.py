@@ -79,13 +79,13 @@ def train(**kwargs):
     faster_rcnn = FasterRCNNVGG16()
     print('model construct completed')
     trainer = FasterRCNNTrainer(faster_rcnn).cuda()
+    trainer2 = FasterRCNNTrainer(faster_rcnn).cuda()
     if opt.load_path:
         trainer.load(opt.load_path)
         print('load pretrained model from {}'.format(opt.load_path))
 
     # trainer.vis.text(dataset.db.label_names, win='labels')
     adversary = None
-    trainer2 = clone(trainer)
     if opt.flagadvtrain:
         print("flagadvtrain turned: Adversarial training!")
         atk = PGD.PGD(trainer, eps=16, alpha=3, steps=4)
