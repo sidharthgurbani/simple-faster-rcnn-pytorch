@@ -21,6 +21,8 @@ from utils.vis_tool import visdom_bbox
 from utils.eval_tool import eval_detection_voc
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image
+from data.util import read_image
 import copy
 
 # fix for ulimit
@@ -59,6 +61,17 @@ def eval(dataloader, faster_rcnn, test_num=10000, flagadvtrain=False, adversary=
         use_07_metric=True)
     return result
 
+
+def img2jpg(img, jpg_dir, img_suffix):
+    img = img.transpose((1, 2, 0))
+    img = Image.fromarray(img.astype('uint8'))
+    print(img)
+    if not os.path.exists(jpg_dir):
+        os.makedirs(jpg_dir)
+    jpg_path = jpg_dir + img_suffix
+    img.save(jpg_path, format='JPEG')
+    jpg_img = read_image(jpg_path)
+    return jpg_img
 
 def train(**kwargs):
     opt._parse(kwargs)
@@ -104,17 +117,6 @@ def train(**kwargs):
         trainer_orig.reset_meters()
         once = True
         for ii, (img, bbox_, label_, scale) in tqdm(enumerate(dataloader)):
-            print("type of image is {}".format(type(img)))
-            # print("Shape of image initially is {}".format(img.shape))
-            temp_img_ = inverse_normalize(at.tonumpy(img[0]))
-            temp_img = visdom_bbox(temp_img_,
-                                      at.tonumpy(bbox_[0]),
-                                      at.tonumpy(label_[0]))
-            plt.figure()
-            c, h, w = temp_img.shape
-            plt.imshow(np.reshape(temp_img, (h, w, c)))
-            plt.savefig("imgs/temp_orig_images/temp_img{}".format(ii))
-            plt.close()
             scale = at.scalar(scale)
             img, bbox, label = img.cuda().float(), bbox_.cuda(), label_.cuda()
             temp_img = copy.deepcopy(img)
@@ -142,55 +144,59 @@ def train(**kwargs):
 
                 # plot groud truth bboxes
                 temp_ori_img_ = inverse_normalize(at.tonumpy(temp_img[0]))
-                temp_gt_img = visdom_bbox(temp_ori_img_,
-                                          at.tonumpy(bbox_[0]),
-                                          at.tonumpy(label_[0]))
-                plt.figure()
-                c, h, w = temp_gt_img.shape
-                plt.imshow(np.reshape(temp_gt_img, (h, w, c)))
-                plt.savefig("imgs/temp_orig_images/temp_gt_img{}".format(ii))
-                plt.close()
+                img2jpg(temp_ori_img_, "imgs/temp_orig_images/", "temp_gt_img{}".format(ii))
+                # temp_gt_img = visdom_bbox(temp_ori_img_,
+                #                           at.tonumpy(bbox_[0]),
+                #                           at.tonumpy(label_[0]))
+                # plt.figure()
+                # c, h, w = temp_gt_img.shape
+                # plt.imshow(np.reshape(temp_gt_img, (h, w, c)))
+                # plt.savefig("imgs/temp_orig_images/temp_gt_img{}".format(ii))
+                # plt.close()
 
                 ori_img_ = inverse_normalize(at.tonumpy(img[0]))
-                gt_img = visdom_bbox(ori_img_,
-                                     at.tonumpy(bbox_[0]),
-                                     at.tonumpy(label_[0]))
-                plt.figure()
-                c, h, w = gt_img.shape
-                plt.imshow(np.reshape(gt_img, (h, w, c)))
-                plt.savefig("imgs/orig_images/gt_img{}".format(ii))
-                plt.close()
+                # print("GT Label is {} and pred_label is {}".format(label_[0],))
+                img2jpg(ori_img_, "imgs/orig_images/", "gt_img{}".format(ii))
+                # gt_img = visdom_bbox(ori_img_,
+                #                      at.tonumpy(bbox_[0]),
+                #                      at.tonumpy(label_[0]))
+                # plt.figure()
+                # c, h, w = gt_img.shape
+                # plt.imshow(np.reshape(gt_img, (h, w, c)))
+                # plt.savefig("imgs/orig_images/gt_img{}".format(ii))
+                # plt.close()
 
                 # trainer.vis.img('gt_img', gt_img)
 
                 # plot predicti bboxes
 
-                print("Shape of orig_img_ is {}".format(ori_img_.shape))
+                # print("Shape of orig_img_ is {}".format(ori_img_.shape))
                 _bboxes, _labels, _scores = trainer.faster_rcnn.predict([ori_img_], visualize=True)
-                pred_img = visdom_bbox(ori_img_,
-                                       at.tonumpy(_bboxes[0]),
-                                       at.tonumpy(_labels[0]).reshape(-1),
-                                       at.tonumpy(_scores[0]))
+                print("Shape of gt labels is {} and pred_labels is {}".format(label_[0], _labels[0]))
+                # pred_img = visdom_bbox(ori_img_,
+                #                        at.tonumpy(_bboxes[0]),
+                #                        at.tonumpy(_labels[0]).reshape(-1),
+                #                        at.tonumpy(_scores[0]))
+                #
+                # plt.figure()
+                # c, h, w = pred_img.shape
+                # plt.imshow(np.reshape(pred_img, (h, w, c)))
+                # plt.savefig("imgs/pred_images/pred_img{}".format(ii))
+                # plt.close()
 
-                plt.figure()
-                c, h, w = pred_img.shape
-                plt.imshow(np.reshape(pred_img, (h, w, c)))
-                plt.savefig("imgs/pred_images/pred_img{}".format(ii))
-                plt.close()
-
-                print("Shape of temp_orig_img_ is {}".format(temp_ori_img_.shape))
-                _temp_bboxes, _temp_labels, _temp_scores = trainer_orig.faster_rcnn.predict([temp_ori_img_],
-                                                                                            visualize=True)
-                temp_pred_img = visdom_bbox(temp_ori_img_,
-                                            at.tonumpy(_temp_bboxes[0]),
-                                            at.tonumpy(_temp_labels[0]).reshape(-1),
-                                            at.tonumpy(_temp_scores[0]))
-
-                plt.figure()
-                c, h, w = temp_pred_img.shape
-                plt.imshow(np.reshape(temp_pred_img, (h, w, c)))
-                plt.savefig("imgs/temp_pred_images/temp_pred_img{}".format(ii))
-                plt.close()
+                # print("Shape of temp_orig_img_ is {}".format(temp_ori_img_.shape))
+                # _temp_bboxes, _temp_labels, _temp_scores = trainer_orig.faster_rcnn.predict([temp_ori_img_],
+                #                                                                             visualize=True)
+                # temp_pred_img = visdom_bbox(temp_ori_img_,
+                #                             at.tonumpy(_temp_bboxes[0]),
+                #                             at.tonumpy(_temp_labels[0]).reshape(-1),
+                #                             at.tonumpy(_temp_scores[0]))
+                #
+                # plt.figure()
+                # c, h, w = temp_pred_img.shape
+                # plt.imshow(np.reshape(temp_pred_img, (h, w, c)))
+                # plt.savefig("imgs/temp_pred_images/temp_pred_img{}".format(ii))
+                # plt.close()
 
                 # trainer.vis.img('pred_img', pred_img)
 
