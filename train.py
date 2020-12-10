@@ -78,11 +78,13 @@ def train(**kwargs):
                                        pin_memory=True
                                        )
     faster_rcnn = FasterRCNNVGG16()
+    faster_rcnn_orig = FasterRCNNVGG16()
     print('model construct completed')
     trainer = FasterRCNNTrainer(faster_rcnn).cuda()
-    trainer2 = FasterRCNNTrainer(faster_rcnn).cuda()
+    trainer_orig = FasterRCNNTrainer(faster_rcnn_orig).cuda()
     if opt.load_path:
         trainer.load(opt.load_path)
+        trainer_orig.load(opt.load_path)
         print('load pretrained model from {}'.format(opt.load_path))
 
     # trainer.vis.text(dataset.db.label_names, win='labels')
@@ -99,18 +101,14 @@ def train(**kwargs):
     adv_total_loss = []
     for epoch in range(opt.epoch):
         trainer.reset_meters()
-        trainer2.reset_meters()
+        trainer_orig.reset_meters()
+        once = True
         for ii, (img, bbox_, label_, scale) in tqdm(enumerate(dataloader)):
             scale = at.scalar(scale)
             img, bbox, label = img.cuda().float(), bbox_.cuda(), label_.cuda()
             temp_img = copy.deepcopy(img)
 
-            # print("This is before adversarial training")
-            # print("Shape of image is {}".format(img.shape))
-            # print("Shape of image is {}".format(bbox.shape))
-            # print("Shape of image is {}\n".format(label.shape))
-
-            trainer2.train_step(img, bbox, label, scale)
+            trainer_orig.train_step(temp_img, bbox, label, scale)
 
             if opt.flagadvtrain:
                 img = atk(img, bbox, label, scale)
@@ -121,7 +119,7 @@ def train(**kwargs):
             # print("Normal training starts\n")
             trainer.train_step(img, bbox, label, scale)
 
-            normal_total_loss.append(trainer2.get_meter_data()["total_loss"])
+            normal_total_loss.append(trainer_orig.get_meter_data()["total_loss"])
             adv_total_loss.append(trainer.get_meter_data()["total_loss"])
 
             if (ii + 1) % opt.plot_every == 0:
@@ -134,8 +132,8 @@ def train(**kwargs):
                 # plot groud truth bboxes
                 temp_ori_img_ = inverse_normalize(at.tonumpy(temp_img[0]))
                 temp_gt_img = visdom_bbox(temp_ori_img_,
-                                     at.tonumpy(bbox_[0]),
-                                     at.tonumpy(label_[0]))
+                                          at.tonumpy(bbox_[0]),
+                                          at.tonumpy(label_[0]))
                 plt.figure()
                 c, h, w = temp_gt_img.shape
                 plt.imshow(np.reshape(temp_gt_img, (h, w, c)))
@@ -155,32 +153,38 @@ def train(**kwargs):
                 # trainer.vis.img('gt_img', gt_img)
 
                 # plot predicti bboxes
-                _bboxes, _labels, _scores = trainer.faster_rcnn.predict([temp_ori_img_], visualize=True)
+                if once==True:
+                    print("Shape of orig_img_ is {}".format(ori_img_.shape))
+                _bboxes, _labels, _scores = trainer.faster_rcnn.predict([ori_img_], visualize=False)
                 pred_img = visdom_bbox(ori_img_,
                                        at.tonumpy(_bboxes[0]),
                                        at.tonumpy(_labels[0]).reshape(-1),
                                        at.tonumpy(_scores[0]))
+
                 plt.figure()
                 c, h, w = pred_img.shape
                 plt.imshow(np.reshape(pred_img, (h, w, c)))
                 plt.savefig("imgs/pred_images/pred_img{}".format(ii))
                 plt.close()
+
+                _temp_bboxes, _temp_labels, _temp_scores = trainer_orig.faster_rcnn.predict([temp_ori_img_], visualize=False)
+                temp_pred_img = visdom_bbox(temp_ori_img_,
+                                            at.tonumpy(_bboxes[0]),
+                                            at.tonumpy(_labels[0]).reshape(-1),
+                                            at.tonumpy(_scores[0]))
+
+                plt.figure()
+                c, h, w = temp_pred_img.shape
+                plt.imshow(np.reshape(temp_pred_img, (h, w, c)))
+                plt.savefig("imgs/temp_pred_images/temp_pred_img{}".format(ii))
+                plt.close()
+
                 # trainer.vis.img('pred_img', pred_img)
 
                 # rpn confusion matrix(meter)
                 # trainer.vis.text(str(trainer.rpn_cm.value().tolist()), win='rpn_cm')
                 # roi confusion matrix
                 # trainer.vis.img('roi_cm', at.totensor(trainer.roi_cm.conf, False).float())
-
-        # plt.figure()
-        # plt.plot(normal_total_loss)
-        # plt.savefig("losses/normal_loss{}".format(epoch))
-        # plt.close()
-        #
-        # plt.figure()
-        # plt.plot(adv_total_loss)
-        # plt.savefig("losses/adv_loss{}".format(epoch))
-        # plt.close()
 
         fig = plt.figure()
         ax1 = fig.add_subplot(2,1,1)
