@@ -104,6 +104,17 @@ def train(**kwargs):
         trainer_orig.reset_meters()
         once = True
         for ii, (img, bbox_, label_, scale) in tqdm(enumerate(dataloader)):
+            print("type of image is {}".format(type(img)))
+            # print("Shape of image initially is {}".format(img.shape))
+            temp_img_ = inverse_normalize(at.tonumpy(img[0]))
+            temp_img = visdom_bbox(temp_img_,
+                                      at.tonumpy(bbox_[0]),
+                                      at.tonumpy(label_[0]))
+            plt.figure()
+            c, h, w = temp_img.shape
+            plt.imshow(np.reshape(temp_img, (h, w, c)))
+            plt.savefig("imgs/temp_orig_images/temp_img{}".format(ii))
+            plt.close()
             scale = at.scalar(scale)
             img, bbox, label = img.cuda().float(), bbox_.cuda(), label_.cuda()
             temp_img = copy.deepcopy(img)
