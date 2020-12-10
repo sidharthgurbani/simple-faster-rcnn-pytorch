@@ -235,7 +235,7 @@ class FasterRCNN(nn.Module):
         bboxes = list()
         labels = list()
         scores = list()
-        print("Predicting images for image with shape {}:\n".format(prepared_imgs.shape))
+        print("Predicting images for image with length {}:\n".format(len(prepared_imgs)))
         i = 0
         for img, size in zip(prepared_imgs, sizes):
             print("Shape of image {} is {}\n".format(i, img.shape))
