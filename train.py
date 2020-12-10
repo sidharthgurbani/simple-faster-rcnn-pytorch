@@ -172,7 +172,7 @@ def train(**kwargs):
 
                 # print("Shape of orig_img_ is {}".format(ori_img_.shape))
                 _bboxes, _labels, _scores = trainer.faster_rcnn.predict([ori_img_], visualize=True)
-                print("Shape of gt labels is {} and pred_labels is {}".format(label_[0], _labels[0]))
+                print("gt labels is {} and pred_labels is {}".format(label_, _labels))
                 # pred_img = visdom_bbox(ori_img_,
                 #                        at.tonumpy(_bboxes[0]),
                 #                        at.tonumpy(_labels[0]).reshape(-1),
@@ -185,8 +185,9 @@ def train(**kwargs):
                 # plt.close()
 
                 # print("Shape of temp_orig_img_ is {}".format(temp_ori_img_.shape))
-                # _temp_bboxes, _temp_labels, _temp_scores = trainer_orig.faster_rcnn.predict([temp_ori_img_],
-                #                                                                             visualize=True)
+                _temp_bboxes, _temp_labels, _temp_scores = trainer_orig.faster_rcnn.predict([temp_ori_img_],
+                                                                                            visualize=True)
+                print("gt labels is {} and pred_labels w/o adv is {}".format(label_, _temp_labels))
                 # temp_pred_img = visdom_bbox(temp_ori_img_,
                 #                             at.tonumpy(_temp_bboxes[0]),
                 #                             at.tonumpy(_temp_labels[0]).reshape(-1),
