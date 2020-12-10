@@ -155,7 +155,7 @@ def train(**kwargs):
                 # plot predicti bboxes
                 if once==True:
                     print("Shape of orig_img_ is {}".format(ori_img_.shape))
-                _bboxes, _labels, _scores = trainer.faster_rcnn.predict([ori_img_], visualize=False)
+                _bboxes, _labels, _scores = trainer.faster_rcnn.predict([ori_img_], visualize=True)
                 pred_img = visdom_bbox(ori_img_,
                                        at.tonumpy(_bboxes[0]),
                                        at.tonumpy(_labels[0]).reshape(-1),
@@ -167,11 +167,12 @@ def train(**kwargs):
                 plt.savefig("imgs/pred_images/pred_img{}".format(ii))
                 plt.close()
 
-                _temp_bboxes, _temp_labels, _temp_scores = trainer_orig.faster_rcnn.predict([temp_ori_img_], visualize=False)
+                _temp_bboxes, _temp_labels, _temp_scores = trainer_orig.faster_rcnn.predict([temp_ori_img_],
+                                                                                            visualize=True)
                 temp_pred_img = visdom_bbox(temp_ori_img_,
-                                            at.tonumpy(_bboxes[0]),
-                                            at.tonumpy(_labels[0]).reshape(-1),
-                                            at.tonumpy(_scores[0]))
+                                            at.tonumpy(_temp_bboxes[0]),
+                                            at.tonumpy(_temp_labels[0]).reshape(-1),
+                                            at.tonumpy(_temp_scores[0]))
 
                 plt.figure()
                 c, h, w = temp_pred_img.shape
