@@ -127,7 +127,7 @@ class PGD(attack.Attack):
         if self.random_start:
             # Starting at a uniformly random point
             adv_images = adv_images + torch.empty_like(adv_images).uniform_(-self.eps, self.eps)
-            adv_images = torch.clamp(adv_images, min=0, max=1)
+            adv_images = torch.clamp(adv_images, min=-1, max=1)
 
 
         for i in range(self.steps):
