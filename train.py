@@ -194,7 +194,8 @@ def train(**kwargs):
                 total_imgs += 1
                 if len(_temp_labels) == 0:
                     continue
-                true_imgs += 1 if (_labels[0] == _temp_labels[0]) else 0
+                if _labels[0] == _temp_labels[0]:
+                    true_imgs += 1
                 # pred_img = visdom_bbox(ori_img_,
                 #                        at.tonumpy(_bboxes[0]),
                 #                        at.tonumpy(_labels[0]).reshape(-1),
