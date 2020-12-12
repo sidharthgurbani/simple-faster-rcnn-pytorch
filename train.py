@@ -203,7 +203,7 @@ def train(**kwargs):
                 # plot predicti bboxes
                 _bboxes, _labels, _scores = trainer.faster_rcnn.predict([ori_img_], visualize=True)
 
-                gt_img = visdom_bbox(img[0],
+                gt_img = visdom_bbox(img,
                                           at.tonumpy(_bboxes[0]),
                                           at.tonumpy(_labels[0]))
 
@@ -211,7 +211,7 @@ def train(**kwargs):
 
                 _temp_bboxes, _temp_labels, _temp_scores = trainer.faster_rcnn.predict([temp_ori_img_], visualize=True)
 
-                temp_gt_img = visdom_bbox(temp_img[0],
+                temp_gt_img = visdom_bbox(temp_img,
                                           at.tonumpy(_temp_bboxes[0]),
                                           at.tonumpy(_temp_labels[0]))
 
