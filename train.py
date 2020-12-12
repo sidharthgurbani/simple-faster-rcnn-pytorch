@@ -230,7 +230,7 @@ def train(**kwargs):
                 plt.close()
                 # img2jpg(temp_gt_img, "imgs/orig_images/", "gt_img{}".format(ii))
 
-                print("gt labels is {}, pred_orig_labels is {} and pred_adv_labels is {}".format(label_, _labels, _temp_labels))
+                # print("gt labels is {}, pred_orig_labels is {} and pred_adv_labels is {}".format(label_, _labels, _temp_labels))
                 total_imgs += 1
                 if len(_temp_labels) == 0:
                     continue
