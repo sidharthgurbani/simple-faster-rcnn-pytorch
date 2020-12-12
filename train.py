@@ -101,7 +101,7 @@ def train(**kwargs):
     adversary = None
     if opt.flagadvtrain:
         print("flagadvtrain turned: Adversarial training!")
-        atk = PGD.PGD(trainer, eps=16, alpha=3, steps=4)
+        atk = PGD.PGD(trainer, eps=16/255, alpha=3/255, steps=4)
         # atk = torchattacks.PGD(trainer.faster_rcnn, eps=16, alpha=3, steps=4)
         # adversary = PGDAttack(trainer.faster_rcnn, loss_fn=nn.CrossEntropyLoss(), eps=16, nb_iter=4, eps_iter=3,
         #                       rand_init=True, clip_min=0.0, clip_max=1.0, targeted=False)
