@@ -143,7 +143,7 @@ def train(**kwargs):
 
                 # plot groud truth bboxes
                 temp_ori_img_ = inverse_normalize(at.tonumpy(temp_img[0]))
-                # img2jpg(temp_ori_img_, "imgs/orig_images/", "gt_img{}".format(ii))
+                img2jpg(temp_ori_img_, "imgs/orig_images/", "gt_img{}".format(ii))
 
                 # temp_gt_img = visdom_bbox(temp_ori_img_,
                 #                           at.tonumpy(bbox_[0]),
@@ -157,7 +157,7 @@ def train(**kwargs):
 
                 ori_img_ = inverse_normalize(at.tonumpy(img[0]))
                 # print("GT Label is {} and pred_label is {}".format(label_[0],))
-                # img2jpg(ori_img_, "imgs/adv_images/", "adv_img{}".format(ii))
+                img2jpg(ori_img_, "imgs/adv_images/", "adv_img{}".format(ii))
 
                 # gt_img = visdom_bbox(ori_img_,
                 #                      at.tonumpy(bbox_[0]),
@@ -172,29 +172,27 @@ def train(**kwargs):
                 # trainer.vis.img('gt_img', gt_img)
 
                 # plot predicti bboxes
-
-                # print("Shape of orig_img_ is {}".format(ori_img_.shape))
                 _bboxes, _labels, _scores = trainer.faster_rcnn.predict([ori_img_], visualize=True)
 
-                gt_img = visdom_bbox(ori_img_,
-                                          at.tonumpy(_bboxes[0]),
-                                          at.tonumpy(_labels[0]))
-
-                img2jpg(gt_img, "imgs/adv_images/", "adv_img{}".format(ii))
+                # gt_img = visdom_bbox(ori_img_,
+                #                           at.tonumpy(_bboxes[0]),
+                #                           at.tonumpy(_labels[0]))
+                #
+                # img2jpg(gt_img, "imgs/adv_images/", "adv_img{}".format(ii))
 
                 _temp_bboxes, _temp_labels, _temp_scores = trainer.faster_rcnn.predict([temp_ori_img_], visualize=True)
 
-                temp_gt_img = visdom_bbox(temp_ori_img_,
-                                          at.tonumpy(_temp_bboxes[0]),
-                                          at.tonumpy(_temp_labels[0]))
-
-                img2jpg(temp_gt_img, "imgs/orig_images/", "gt_img{}".format(ii))
+                # temp_gt_img = visdom_bbox(temp_ori_img_,
+                #                           at.tonumpy(_temp_bboxes[0]),
+                #                           at.tonumpy(_temp_labels[0]))
+                #
+                # img2jpg(temp_gt_img, "imgs/orig_images/", "gt_img{}".format(ii))
 
                 print("gt labels is {}, pred_orig_labels is {} and pred_adv_labels is {}".format(label_, _labels, _temp_labels))
                 total_imgs += 1
                 if len(_temp_labels) == 0:
                     continue
-                if _labels[0] == _temp_labels[0]:
+                if (_labels == _temp_labels).all() is True:
                     true_imgs += 1
                 # pred_img = visdom_bbox(ori_img_,
                 #                        at.tonumpy(_bboxes[0]),
