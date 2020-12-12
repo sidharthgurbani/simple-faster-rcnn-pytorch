@@ -213,13 +213,7 @@ def train(**kwargs):
                 fig1.savefig("imgs/adv_images/adv_img{}".format(ii))
                 plt.close()
 
-                # img2jpg(gt_img, "imgs/adv_images/", "adv_img{}".format(ii))
-
                 _temp_bboxes, _temp_labels, _temp_scores = trainer.faster_rcnn.predict([temp_ori_img_], visualize=True)
-
-                # temp_gt_img = visdom_bbox(at.tonumpy(temp_img[0].cpu()),
-                #                           at.tonumpy(_temp_bboxes[0]),
-                #                           at.tonumpy(_temp_labels[0]))
 
                 fig2 = plt.figure()
                 ax2 = fig2.add_subplot(1, 1, 1)
@@ -227,7 +221,7 @@ def train(**kwargs):
                 # final2 = (at.tonumpy(temp_img[0].cpu()).transpose(1, 2, 0).astype(np.uint8))
                 ax2.imshow(final2)
 
-                gt_img = visdom_bbox(ax2, at.tonumpy(_bboxes[0]), at.tonumpy(_labels[0]))
+                gt_img = visdom_bbox(ax2, at.tonumpy(_temp_bboxes[0]), at.tonumpy(_temp_labels[0]))
                 fig2.savefig("imgs/orig_images/gt_img{}".format(ii))
                 plt.close()
                 # img2jpg(temp_gt_img, "imgs/orig_images/", "gt_img{}".format(ii))
