@@ -205,7 +205,7 @@ def train(**kwargs):
 
                 fig1 = plt.figure()
                 ax1 = fig1.add_subplot(1,1,1)
-                final1 = (at.tonumpy(img[0]).cpu()).transpose(1,2,0).astype(int)
+                final1 = (at.tonumpy(img[0].cpu()).transpose(1,2,0).astype(int))
                 ax1.imshow(final1)
 
                 gt_img = visdom_bbox(ax1,at.tonumpy(_bboxes[0]),at.tonumpy(_labels[0]))
@@ -222,7 +222,7 @@ def train(**kwargs):
 
                 fig2 = plt.figure()
                 ax2 = fig2.add_subplot(1, 1, 1)
-                final2 = (at.tonumpy(temp_img[0]).cpu()).transpose(1, 2, 0).astype(int)
+                final2 = (at.tonumpy(temp_img[0].cpu()).transpose(1, 2, 0).astype(int))
                 ax2.imshow(final2)
 
                 gt_img = visdom_bbox(ax2, at.tonumpy(_bboxes[0]), at.tonumpy(_labels[0]))
