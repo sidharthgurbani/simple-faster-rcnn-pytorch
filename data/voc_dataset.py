@@ -77,7 +77,7 @@ class VOCBboxDataset:
             data_dir, 'ImageSets/Main/{0}.txt'.format(split))
 
         self.ids = [id_.strip() for id_ in open(id_list_file)]
-        self.ids = [id1 for id1 in self.ids if id1 in list(range(250, 401))]
+        self.ids = [print(id1) for id1 in self.ids if id1 in list(range(250, 401))]
 
         self.data_dir = data_dir
         self.use_difficult = use_difficult
