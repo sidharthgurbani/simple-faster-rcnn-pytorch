@@ -170,7 +170,9 @@ def train(**kwargs):
                 _temp_bboxes, _temp_labels, _temp_scores = trainer.faster_rcnn.predict([temp_ori_img_], visualize=True)
                 print("gt labels is {}, pred_orig_labels is {} and pred_adv_labels is {}".format(label_, _labels, _temp_labels))
                 total_imgs += 1
-                true_imgs += 1 if (_labels == _temp_labels) else 0
+                if len(_temp_labels) == 0:
+                    continue
+                true_imgs += 1 if (_labels[0] == _temp_labels[0]) else 0
                 # pred_img = visdom_bbox(ori_img_,
                 #                        at.tonumpy(_bboxes[0]),
                 #                        at.tonumpy(_labels[0]).reshape(-1),
@@ -217,7 +219,10 @@ def train(**kwargs):
         #     trainer.faster_rcnn.scale_lr(opt.lr_decay)
         #     lr_ = lr_ * opt.lr_decay
 
-        if epoch == 13: 
+        if epoch == 0:
+            break
+
+        if epoch == 13:
             break
 
     # plt.figure()

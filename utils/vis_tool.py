@@ -52,8 +52,9 @@ def vis_image(img, ax=None):
     """
 
     if ax is None:
-        fig = plot.figure()
-        ax = fig.add_subplot(1, 1, 1)
+        fig, ax = plot.subplots()
+        # fig = plot.figure()
+        # ax = fig.add_subplot(1, 1, 1)
     # CHW -> HWC
     img = img.transpose((1, 2, 0))
     ax.imshow(img.astype(np.uint8))
@@ -106,8 +107,9 @@ def vis_bbox(img, bbox, label=None, score=None, ax=None):
         xy = (bb[1], bb[0])
         height = bb[2] - bb[0]
         width = bb[3] - bb[1]
-        ax.add_patch(plot.Rectangle(
-            xy, width, height, fill=False, edgecolor='red', linewidth=2))
+        ax.Rectangle(xy, width, height, fill=False, edgecolor='red', linewidth=2)
+        # ax.add_patch(plot.Rectangle(
+        #     xy, width, height, fill=False, edgecolor='red', linewidth=2))
 
         caption = list()
 
