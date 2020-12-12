@@ -57,7 +57,6 @@ def vis_image(img, ax=None):
         ax = fig.add_subplot(1, 1, 1)
     # CHW -> HWC
     # img = img.transpose((1, 2, 0))
-    print(img.shape)
     img = img.transpose(1,2,0)
     ax.imshow(img.astype(np.uint8))
     return ax
