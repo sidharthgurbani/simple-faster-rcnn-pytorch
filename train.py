@@ -209,7 +209,7 @@ def train(**kwargs):
                 ax1.imshow(final1)
 
                 gt_img = visdom_bbox(ax1,at.tonumpy(_bboxes[0]),at.tonumpy(_labels[0]))
-                plt.savefig("imgs/adv_images/adv_img{}".format(ii))
+                fig1.savefig("imgs/adv_images/adv_img{}".format(ii))
                 plt.close()
 
                 # img2jpg(gt_img, "imgs/adv_images/", "adv_img{}".format(ii))
@@ -226,7 +226,7 @@ def train(**kwargs):
                 ax2.imshow(final2)
 
                 gt_img = visdom_bbox(ax2, at.tonumpy(_bboxes[0]), at.tonumpy(_labels[0]))
-                plt.savefig("imgs/orig_images/gt_img{}".format(ii))
+                fig2.savefig("imgs/orig_images/gt_img{}".format(ii))
                 plt.close()
                 # img2jpg(temp_gt_img, "imgs/orig_images/", "gt_img{}".format(ii))
 
