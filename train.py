@@ -91,13 +91,10 @@ def train(**kwargs):
                                        pin_memory=True
                                        )
     faster_rcnn = FasterRCNNVGG16()
-    faster_rcnn_orig = FasterRCNNVGG16()
     print('model construct completed')
     trainer = FasterRCNNTrainer(faster_rcnn).cuda()
-    trainer_orig = FasterRCNNTrainer(faster_rcnn_orig).cuda()
     if opt.load_path:
         trainer.load(opt.load_path)
-        trainer_orig.load(opt.load_path)
         print('load pretrained model from {}'.format(opt.load_path))
 
     # trainer.vis.text(dataset.db.label_names, win='labels')
@@ -112,16 +109,15 @@ def train(**kwargs):
     lr_ = opt.lr
     normal_total_loss = []
     adv_total_loss = []
+    total_imgs = 0
+    true_imgs = 0
     for epoch in range(opt.epoch):
         trainer.reset_meters()
-        trainer_orig.reset_meters()
         once = True
         for ii, (img, bbox_, label_, scale) in tqdm(enumerate(dataloader)):
             scale = at.scalar(scale)
+            temp_img = copy.deepcopy(img).cuda()
             img, bbox, label = img.cuda().float(), bbox_.cuda(), label_.cuda()
-            temp_img = copy.deepcopy(img)
-
-            trainer_orig.train_step(temp_img, bbox, label, scale)
 
             if opt.flagadvtrain:
                 img = atk(img, bbox, label, scale)
@@ -130,12 +126,11 @@ def train(**kwargs):
                 # print("Adversarial training done!")
 
             # print("Normal training starts\n")
-            trainer.train_step(img, bbox, label, scale)
+            # trainer.train_step(img, bbox, label, scale)
 
-            normal_total_loss.append(trainer_orig.get_meter_data()["total_loss"])
-            adv_total_loss.append(trainer.get_meter_data()["total_loss"])
 
             if (ii + 1) % opt.plot_every == 0:
+                # adv_total_loss.append(trainer.get_meter_data()["total_loss"])
                 if os.path.exists(opt.debug_file):
                     ipdb.set_trace()
 
@@ -172,32 +167,22 @@ def train(**kwargs):
 
                 # print("Shape of orig_img_ is {}".format(ori_img_.shape))
                 _bboxes, _labels, _scores = trainer.faster_rcnn.predict([ori_img_], visualize=True)
-                print("gt labels is {} and pred_labels is {}".format(label_, _labels))
+                _temp_bboxes, _temp_labels, _temp_scores = trainer.faster_rcnn.predict([temp_ori_img_], visualize=True)
+                print("gt labels is {}, pred_orig_labels is {} and pred_adv_labels is {}".format(label_, _labels, _temp_labels))
+                total_imgs += 1
+                true_imgs += 1 if (_labels == _temp_labels) else 0
                 # pred_img = visdom_bbox(ori_img_,
                 #                        at.tonumpy(_bboxes[0]),
                 #                        at.tonumpy(_labels[0]).reshape(-1),
                 #                        at.tonumpy(_scores[0]))
                 #
-                # plt.figure()
-                # c, h, w = pred_img.shape
-                # plt.imshow(np.reshape(pred_img, (h, w, c)))
-                # plt.savefig("imgs/pred_images/pred_img{}".format(ii))
-                # plt.close()
 
                 # print("Shape of temp_orig_img_ is {}".format(temp_ori_img_.shape))
-                _temp_bboxes, _temp_labels, _temp_scores = trainer_orig.faster_rcnn.predict([temp_ori_img_],
-                                                                                            visualize=True)
-                print("gt labels is {} and pred_labels w/o adv is {}".format(label_, _temp_labels))
                 # temp_pred_img = visdom_bbox(temp_ori_img_,
                 #                             at.tonumpy(_temp_bboxes[0]),
                 #                             at.tonumpy(_temp_labels[0]).reshape(-1),
                 #                             at.tonumpy(_temp_scores[0]))
                 #
-                # plt.figure()
-                # c, h, w = temp_pred_img.shape
-                # plt.imshow(np.reshape(temp_pred_img, (h, w, c)))
-                # plt.savefig("imgs/temp_pred_images/temp_pred_img{}".format(ii))
-                # plt.close()
 
                 # trainer.vis.img('pred_img', pred_img)
 
@@ -206,36 +191,39 @@ def train(**kwargs):
                 # roi confusion matrix
                 # trainer.vis.img('roi_cm', at.totensor(trainer.roi_cm.conf, False).float())
 
-        fig = plt.figure()
-        ax1 = fig.add_subplot(2,1,1)
-        ax1.plot(normal_total_loss)
-        ax2 = fig.add_subplot(2,1,2)
-        ax2.plot(adv_total_loss)
-        fig.savefig("losses/both_loss{}".format(epoch))
+        # fig = plt.figure()
+        # ax1 = fig.add_subplot(2,1,1)
+        # ax1.plot(normal_total_loss)
+        # ax2 = fig.add_subplot(2,1,2)
+        # ax2.plot(adv_total_loss)
+        # fig.savefig("losses/both_loss{}".format(epoch))
 
-        eval_result = eval(test_dataloader, faster_rcnn, test_num=opt.test_num,
-                           flagadvtrain=opt.flagadvtrain, adversary=atk)# adversary=adversary)
+        # eval_result = eval(test_dataloader, faster_rcnn, test_num=opt.test_num,
+        #                    flagadvtrain=opt.flagadvtrain, adversary=atk)# adversary=adversary)
 
         # trainer.vis.plot('test_map', eval_result['map'])
-        lr_ = trainer.faster_rcnn.optimizer.param_groups[0]['lr']
-        log_info = 'lr:{}, map:{},loss:{}'.format(str(lr_),
-                                                  str(eval_result['map']),
-                                                  str(trainer.get_meter_data()))
-        print(log_info)
-        # trainer.vis.log(log_info)
-
-        if eval_result['map'] > best_map:
-            best_map = eval_result['map']
-            best_path = trainer.save(best_map=best_map)
-        if epoch == 9:
-            trainer.load(best_path)
-            trainer.faster_rcnn.scale_lr(opt.lr_decay)
-            lr_ = lr_ * opt.lr_decay
+        # lr_ = trainer.faster_rcnn.optimizer.param_groups[0]['lr']
+        # log_info = 'lr:{}, map:{},loss:{}'.format(str(lr_),
+        #                                           str(eval_result['map']),
+        #                                           str(trainer.get_meter_data()))
+        # print(log_info)
+        # # trainer.vis.log(log_info)
+        #
+        # if eval_result['map'] > best_map:
+        #     best_map = eval_result['map']
+        #     best_path = trainer.save(best_map=best_map)
+        # if epoch == 9:
+        #     trainer.load(best_path)
+        #     trainer.faster_rcnn.scale_lr(opt.lr_decay)
+        #     lr_ = lr_ * opt.lr_decay
 
         if epoch == 13: 
             break
 
-        print("Best MAP is {}".format(best_map))
+    # plt.figure()
+    # plt.plot(adv_total_loss)
+    # plt.savefig("losses_adv_loss_final.jpg")
+    # plt.close()
 
 
 if __name__ == '__main__':
