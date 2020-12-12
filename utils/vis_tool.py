@@ -7,6 +7,7 @@ import visdom
 
 matplotlib.use('Agg')
 from matplotlib import pyplot as plot
+from matplotlib import patches as patches
 
 # from data.voc_dataset import VOC_BBOX_LABEL_NAMES
 
@@ -107,7 +108,9 @@ def vis_bbox(img, bbox, label=None, score=None, ax=None):
         xy = (bb[1], bb[0])
         height = bb[2] - bb[0]
         width = bb[3] - bb[1]
-        ax.Rectangle(xy, width, height, fill=False, edgecolor='red', linewidth=2)
+        ax.add_patch(patches.Rectangle(
+            xy, width, height, fill=False, edgecolor='red', linewidth=2)
+        )
         # ax.add_patch(plot.Rectangle(
         #     xy, width, height, fill=False, edgecolor='red', linewidth=2))
 
