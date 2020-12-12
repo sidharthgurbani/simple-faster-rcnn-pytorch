@@ -284,6 +284,8 @@ def train(**kwargs):
         if epoch == 13:
             break
 
+    print("Total number of images is {}".format(total_imgs))
+    print("True images is {}".format(true_imgs))
     print("Total time is {}".format(total_time))
     print("Avg time is {}".format(total_time/total_imgs))
 
