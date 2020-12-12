@@ -216,9 +216,9 @@ def train(**kwargs):
 
                 _temp_bboxes, _temp_labels, _temp_scores = trainer.faster_rcnn.predict([temp_ori_img_], visualize=True)
 
-                temp_gt_img = visdom_bbox(at.tonumpy(temp_img[0].cpu()),
-                                          at.tonumpy(_temp_bboxes[0]),
-                                          at.tonumpy(_temp_labels[0]))
+                # temp_gt_img = visdom_bbox(at.tonumpy(temp_img[0].cpu()),
+                #                           at.tonumpy(_temp_bboxes[0]),
+                #                           at.tonumpy(_temp_labels[0]))
 
                 fig2 = plt.figure()
                 ax2 = fig2.add_subplot(1, 1, 1)
