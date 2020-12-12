@@ -203,11 +203,16 @@ def train(**kwargs):
                 # plot predicti bboxes
                 _bboxes, _labels, _scores = trainer.faster_rcnn.predict([ori_img_], visualize=True)
 
-                gt_img = visdom_bbox(at.tonumpy(img[0].cpu()),
-                                          at.tonumpy(_bboxes[0]),
-                                          at.tonumpy(_labels[0]))
+                fig1 = plt.figure()
+                ax1 = fig1.add_subplot(1,1,1)
+                final1 = (at.tonumpy(img[0]).cpu()).transpose(1,2,0).astype(int)
+                ax1.imshow(final1)
 
-                img2jpg(gt_img, "imgs/adv_images/", "adv_img{}".format(ii))
+                gt_img = visdom_bbox(ax1,at.tonumpy(_bboxes[0]),at.tonumpy(_labels[0]))
+                plt.savefig("imgs/adv_images/adv_img{}".format(ii))
+                plt.close()
+
+                # img2jpg(gt_img, "imgs/adv_images/", "adv_img{}".format(ii))
 
                 _temp_bboxes, _temp_labels, _temp_scores = trainer.faster_rcnn.predict([temp_ori_img_], visualize=True)
 
@@ -215,7 +220,15 @@ def train(**kwargs):
                                           at.tonumpy(_temp_bboxes[0]),
                                           at.tonumpy(_temp_labels[0]))
 
-                img2jpg(temp_gt_img, "imgs/orig_images/", "gt_img{}".format(ii))
+                fig2 = plt.figure()
+                ax2 = fig2.add_subplot(1, 1, 1)
+                final2 = (at.tonumpy(temp_img[0]).cpu()).transpose(1, 2, 0).astype(int)
+                ax2.imshow(final2)
+
+                gt_img = visdom_bbox(ax2, at.tonumpy(_bboxes[0]), at.tonumpy(_labels[0]))
+                plt.savefig("imgs/orig_images/gt_img{}".format(ii))
+                plt.close()
+                # img2jpg(temp_gt_img, "imgs/orig_images/", "gt_img{}".format(ii))
 
                 print("gt labels is {}, pred_orig_labels is {} and pred_adv_labels is {}".format(label_, _labels, _temp_labels))
                 total_imgs += 1

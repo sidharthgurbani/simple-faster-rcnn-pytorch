@@ -62,7 +62,8 @@ def vis_image(img, ax=None):
     return ax
 
 
-def vis_bbox(img, bbox, label=None, score=None, ax=None):
+# def vis_bbox(img, bbox, label=None, score=None, ax=None):
+def vis_bbox(ax, bbox, label=None, score=None):
     """Visualize bounding boxes inside image.
 
     Args:
@@ -98,7 +99,7 @@ def vis_bbox(img, bbox, label=None, score=None, ax=None):
         raise ValueError('The length of score must be same as that of bbox')
 
     # Returns newly instantiated matplotlib.axes.Axes object if ax is None
-    ax = vis_image(img, ax=ax)
+    # ax = vis_image(img, ax=ax)
 
     # If there is no bounding box to display, visualize the image and exit.
     if len(bbox) == 0:
