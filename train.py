@@ -12,6 +12,7 @@ from torch import nn
 from advertorch.context import ctx_noparamgrad_and_eval
 
 from utils.config import opt
+from data.voc_dataset import VOC_BBOX_LABEL_NAMES
 from data.dataset import Dataset, TestDataset, inverse_normalize
 from model import FasterRCNNVGG16
 from torch.utils import data as data_
@@ -72,6 +73,34 @@ def img2jpg(img, jpg_dir, img_suffix):
     img.save(jpg_path, format='JPEG')
     jpg_img = read_image(jpg_path)
     return jpg_img
+
+
+def add_bbox(ax, bbox, label, score):
+
+    for i, bb in enumerate(bbox):
+        xy = (bb[1], bb[0])
+        height = bb[2] - bb[0]
+        width = bb[3] - bb[1]
+        ax.add_patch(plt.Rectangle(
+            xy, width, height, fill=False, edgecolor='red', linewidth=2))
+
+        caption = list()
+        label_names = list(VOC_BBOX_LABEL_NAMES) + ['bg']
+        if label is not None and label_names is not None:
+            lb = label[i]
+            if not (-1 <= lb < len(label_names)):  # modfy here to add backgroud
+                raise ValueError('No corresponding name is given')
+            caption.append(label_names[lb])
+        if score is not None:
+            sc = score[i]
+            caption.append('{:.2f}'.format(sc))
+
+        if len(caption) > 0:
+            ax.text(bb[1], bb[0],
+                    ': '.join(caption),
+                    style='italic',
+                    bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 0})
+    return ax
 
 def train(**kwargs):
     opt._parse(kwargs)
@@ -143,7 +172,7 @@ def train(**kwargs):
 
                 # plot groud truth bboxes
                 temp_ori_img_ = inverse_normalize(at.tonumpy(temp_img[0]))
-                img2jpg(temp_ori_img_, "imgs/orig_images/", "gt_img{}".format(ii))
+                # img2jpg(temp_ori_img_, "imgs/orig_images/", "gt_img{}".format(ii))
 
                 # temp_gt_img = visdom_bbox(temp_ori_img_,
                 #                           at.tonumpy(bbox_[0]),
@@ -157,7 +186,7 @@ def train(**kwargs):
 
                 ori_img_ = inverse_normalize(at.tonumpy(img[0]))
                 # print("GT Label is {} and pred_label is {}".format(label_[0],))
-                img2jpg(ori_img_, "imgs/adv_images/", "adv_img{}".format(ii))
+                # img2jpg(ori_img_, "imgs/adv_images/", "adv_img{}".format(ii))
 
                 # gt_img = visdom_bbox(ori_img_,
                 #                      at.tonumpy(bbox_[0]),
@@ -174,19 +203,19 @@ def train(**kwargs):
                 # plot predicti bboxes
                 _bboxes, _labels, _scores = trainer.faster_rcnn.predict([ori_img_], visualize=True)
 
-                # gt_img = visdom_bbox(ori_img_,
-                #                           at.tonumpy(_bboxes[0]),
-                #                           at.tonumpy(_labels[0]))
-                #
-                # img2jpg(gt_img, "imgs/adv_images/", "adv_img{}".format(ii))
+                gt_img = visdom_bbox(img[0],
+                                          at.tonumpy(_bboxes[0]),
+                                          at.tonumpy(_labels[0]))
+
+                img2jpg(gt_img, "imgs/adv_images/", "adv_img{}".format(ii))
 
                 _temp_bboxes, _temp_labels, _temp_scores = trainer.faster_rcnn.predict([temp_ori_img_], visualize=True)
 
-                # temp_gt_img = visdom_bbox(temp_ori_img_,
-                #                           at.tonumpy(_temp_bboxes[0]),
-                #                           at.tonumpy(_temp_labels[0]))
-                #
-                # img2jpg(temp_gt_img, "imgs/orig_images/", "gt_img{}".format(ii))
+                temp_gt_img = visdom_bbox(temp_img[0],
+                                          at.tonumpy(_temp_bboxes[0]),
+                                          at.tonumpy(_temp_labels[0]))
+
+                img2jpg(temp_gt_img, "imgs/orig_images/", "gt_img{}".format(ii))
 
                 print("gt labels is {}, pred_orig_labels is {} and pred_adv_labels is {}".format(label_, _labels, _temp_labels))
                 total_imgs += 1

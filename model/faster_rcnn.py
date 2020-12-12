@@ -235,10 +235,10 @@ class FasterRCNN(nn.Module):
         bboxes = list()
         labels = list()
         scores = list()
-        print("Predicting images for image with length {}:\n".format(len(prepared_imgs)))
+        # print("Predicting images for image with length {}:\n".format(len(prepared_imgs)))
         i = 0
         for img, size in zip(prepared_imgs, sizes):
-            print("Shape of image {} is {}\n".format(i, img.shape))
+            # print("Shape of image {} is {}\n".format(i, img.shape))
             i += 1
             img = at.totensor(img[None]).float()
             scale = img.shape[3] / size[1]
