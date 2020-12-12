@@ -139,7 +139,7 @@ def train(**kwargs):
 
                 # plot groud truth bboxes
                 temp_ori_img_ = inverse_normalize(at.tonumpy(temp_img[0]))
-                img2jpg(temp_ori_img_, "imgs/temp_orig_images/", "temp_gt_img{}".format(ii))
+                img2jpg(temp_ori_img_, "imgs/orig_images/", "gt_img{}".format(ii))
                 # temp_gt_img = visdom_bbox(temp_ori_img_,
                 #                           at.tonumpy(bbox_[0]),
                 #                           at.tonumpy(label_[0]))
@@ -151,7 +151,7 @@ def train(**kwargs):
 
                 ori_img_ = inverse_normalize(at.tonumpy(img[0]))
                 # print("GT Label is {} and pred_label is {}".format(label_[0],))
-                img2jpg(ori_img_, "imgs/orig_images/", "gt_img{}".format(ii))
+                img2jpg(ori_img_, "imgs/adv_images/", "adv_img{}".format(ii))
                 # gt_img = visdom_bbox(ori_img_,
                 #                      at.tonumpy(bbox_[0]),
                 #                      at.tonumpy(label_[0]))
